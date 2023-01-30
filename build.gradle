@@ -1,0 +1,61 @@
+plugins {
+	id 'java'
+	id 'java-library'
+	id 'maven-publish'
+	id 'nu.studer.credentials' version '3.0'
+	id 'org.springframework.boot' version '3.0.2'
+	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group = 'aka.publish'
+version = '0.0.6'
+sourceCompatibility = '19'
+
+ext {
+	releaseLogin = credentials.forKey('release.login')
+	releaseToken = credentials.forKey('release.token')
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+jar {
+	enabled = true
+	archiveClassifier = ''
+}
+
+publishing {
+	repositories {
+		maven {
+			name = "aka-source"
+			url "https://maven.pkg.github.com/wellaxis/aka-source"
+			credentials {
+				username = project.releaseLogin
+				password = project.releaseToken
+
+//				username = project.findProperty("release.login")
+//				password = project.findProperty("release.token")
+
+				//username = System.getenv("MAVEN_USERNAME")
+				//username = System.getenv("MAVEN_PASSWORD")
+			}
+		}
+	}
+	publications {
+		maven(MavenPublication) {
+			artifact("build/libs/source-${version}.jar") {
+				extension 'jar'
+			}
+		}
+	}
+}
